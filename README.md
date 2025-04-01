@@ -6,76 +6,27 @@ Fecshop Docker
 =============
 
 
-> 用于快速的，使用docker搭建fecshop的环境，方便快速部署，通过docker compopse
-> 通过下载镜像，自己构建镜像，把fecshop需要的各个软件以及扩展都安装好，您
-> 可以根据下面的说明操作
+> 1.Fecshop-1.x版本的Docker安装参看：[Fecshop-1.x版本Docker安装教程](README-1.md)
+> 
+> 2.Fecshop 2.1和2.2版本，参看文档：[Fecshop-2.x版本Docker安装教程](README-2.2.md)
+>
+> 3.Fecshop 2.3以上的版本，参看本文安装教程（2.3.2版本以上）
 
+网络问题说明
+------------
 
+> docker-compose.yml，默认使用的是国外的源，如果您是国内的服务器，可能会遇到某些包被墙
+，您可以按照下面的方法，使用阿里云的源，适合国内的用户下载安装docker环境
+
+国内用户，如果您在docker环境构建的过程中，出现因为网速问题，导致的安装失败，可以将 `docker-compose.yml.aliyun` 内容覆盖 `docker-compose.yml` ,全部使用阿里云
+的镜像（镜像是由fecshop上传的）。
 
 
 
 目录结构介绍
 ---------
 
-
-`./app`: 这里是代码文件，fecshop的代码文件放到这里
-
-`./db`: 这里是环境部分-数据库部分
-
-`./db/mongodb`: 这里是mongodb数据库的部分 
-
-`./db/mongodb/data`: 这里是数据库的数据存放的部分，也就是数据库的库表部分数据。 
-
-`./db/mongodb/example_db`: fecshop的mongodb示例数据
-
-`./db/mongodb/etc/mongod.conf`: Mongodb数据库的配置文件 
-
-
-`./db/mongodb/logs`: Mongodb的logs部分 
-
-
-`./db/mysql`: mysql数据库
-
-`./db/mysql/data`: mysql 数据库表数据存放的位置
-
-`./db/mysql/example_db`: fecshop的mysql示例数据
-
-`./db/mysql/conf.d`: mysql 配置文件
-
-`./db/redis`: redis数据库
-
-`./db/redis/data`: redis数据库的存储部分
-
-`./db/redis/etc/redis.conf`: redis数据库的配置部分
-
-`./db/redis/etc/redis-password`: redis数据库的密码文件
-
-`./db/xunsearch`: xunsearch搜索引擎部分
-
-`./db/xunsearch/data`: xunsearch搜索引擎的数据存储部分
-
-`./example_data`: fecshop的示例数据部分
-
- 
-`./services`: 服务软件部分，譬如php nginx等
-
-`./services/php`: php部分
-
-`./services/php/docker/Dockerfile`: php镜像构建的dockerfile文件
-
-`./services/php/etc/php7.1.13.ini`: php的配置文件
-
-`./services/web`: nginx部分
-
-`./services/web/nginx/conf`: nginx的配置部分
-
-`./services/web/nginx/conf/conf.d/default.conf`：nginx 网站 server 部分的配置文件
-
-`./services/web/nginx/logs`: nginx的log日志文件部分
-
-`./docker-compose.yml`: docker compose配置文件
-
-
+[目录结构介绍](README-FILE.md)
 
 
 安装docker和docker compose
@@ -103,6 +54,8 @@ sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-c
 下载当前库文件，通过`git clone`下载：
 
 ```
+mkdir -p /www/web
+cd /www/web
 git clone https://github.com/fecshop/yii2_fecshop_docker.git
 ```
 
@@ -113,7 +66,7 @@ git clone https://github.com/fecshop/yii2_fecshop_docker.git
 - MYSQL_ROOT_PASSWORD=fecshopxfd3ffaads123456
 ```
 
-1.2更改redis的密码：
+1.2更改redis的密码：（如果您不需要redis，那么这个部分忽略,fecmall默认不需要redis）
 
 ```
 打开文件：`./db/redis/etc/redis-password`,更改里面的redis密码即可。
@@ -124,12 +77,24 @@ mysql和redis的密码要记住，后面配置要用到。
 
 2.构建：
 
+启动docker
+
+```
+service docker start
+```
+
 > 第一次构建需要下载环境，时间会比较长，除了下载docker中心的镜像，还要构建镜像
 > 看网速，如果用阿里云，15分钟差不多完成，使用下面的命令构建环境
 
 ```
+chmod 755 /usr/local/bin/docker-compose
 docker-compose build
 ```
+
+### 网络问题解决
+
+> docker-compose.yml，默认使用的是国外的源，如果您是国内的服务器，可能会遇到某些包被墙
+，您可以按照下面的方法，使用阿里云的源，适合国内的用户下载安装docker环境
 
 如果您在构建的过程中，出现因为网速问题，导致的安装失败，可以将 `docker-compose.yml.aliyun` 内容覆盖 `docker-compose.yml` ,全部使用阿里云
 的镜像（镜像是由fecshop上传的）。
@@ -181,14 +146,13 @@ docker-compose stop
 ### 启动docker ，下载安装fecshop
 
 
-
 > 对于docker ，一定要切记，docker不是虚拟机！docker不是虚拟机！docker不是虚拟机！
 > 每一个服务，对应一个docker 容器，譬如mysql
 > 一个容器，php一个容器，redis一个容器，mongdob一个容器，
 > 每一个容器的数据和配置文件都是在宿主主机上面，通过`volumes`
 > 挂载到容器的相应文件夹中，（我们在`./docker-compose.yml`
 > 配置文件中的`volumes`做了映射）
-> 
+>
 > 因此，对于docker 容器，里面涉及到存储的部分，都应该通过
 > 挂载的方式映射到宿主机上面，而不是在容器里面。
 
@@ -197,7 +161,7 @@ docker-compose stop
 `容器主机`：就是docker容器虚拟的主机。
 
 
-1、启动: 
+1、启动:
 
 进入yii2_fecshop_docker目录，执行：
 
@@ -211,28 +175,43 @@ docker-compose stop
 
 ```
 docker-compose exec php  bash
-// 进入成功后，在php容器中执行：
 cd /www/web
-// 将`1.4.1.0` 替换成相应的fecshop版本。下面提示需要token，参看这里获取Token：http://www.fecshop.com/topic/412
-composer create-project fancyecommerce/fecshop-app-advanced  fecshop 1.4.1.0
-   
 ```
 
-如果上面的composer安装报错：composer安装fxp插件时候内存不足提示提示Fatal error: Uncaught exception 'ErrorException' with message 'proc_open(): fork failed - Cannot allocate memory' in phar，说明内存不够，参看这里解决：
-http://www.fecshop.com/topic/612
-
+如果您是国内的主机，可以切换composer源为阿里云源
 
 ```
-cd fecshop
-composer update
-./init
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
 ```
-执行完后，通过composer加载的文件就完成了。
 
 
-> 参考资料：[Fecshop 安装](http://www.fecshop.com/doc/fecshop-guide/develop/cn-1.0/guide-fecshop-about-hand-install.html)
+**最新的fecshop版本参看**：https://github.com/fecshop/yii2_fecshop/releases
+，
+将`2.3.2` 替换成相应的fecshop版本。
 
-2.2 百度云盘完整版
+```
+
+composer create-project fancyecommerce/fecshop-app-advanced fecshop 2.3.2
+```
+
+**一定要将 2.3.2 替换成最新的版本！！**  **一定要将 2.3.2 替换成最新的版本！！**
+
+**一定要将 2.3.2 替换成最新的版本！！**  **一定要将 2.3.2 替换成最新的版本！！**
+
+
+
+如果你是第一次使用github，会提示需要token，参看这里获取Token：http://www.fecshop.com/topic/412
+
+下载的时候，如果你是第一次使用github，这个地方会卡住，提示你填写github的token，获取github token 参看帖子：http://www.fecshop.com/topic/412
+
+```
+Head to https://github.com/settings/tokens/new?scopes=repo&description=Composer+on+b3817f538307+2018-06-12+1503
+to retrieve a token. It will be stored in "/root/.composer/auth.json" for future use by Composer.
+Token (hidden):
+```
+
+
+3.百度云盘完整版
 
 > 通过百度网盘安装(不建议),如果因为墙无法使用composer，可以访问百度云盘，
 > 下载地址为：http://pan.baidu.com/s/1hs1iC2C 下载日期最新的压缩包即可
@@ -241,226 +220,221 @@ composer update
 那么将文件解压到宿主机 `./app/` 下面即可，将文件夹的名字改成`fecshop`
 ，完成后  `./app/fecshop` 就是fecshop系统包的根目录
 
+
+
+
+### init初始化
+
+进入php容器(/www/web/yii2_fecshop_docker目录下执行)
+
 ```
-cd fecshop   
+docker-compose exec php  bash
+```
+
+
+进入fecshop根目录，执行`init`
+
+```
+cd /www/web/fecshop
 ./init
 ```
 
+完成init初始化后，退出php容器
+
+```
+exit
+```
+
+
+
+执行完后，通过composer加载的文件就完成了。
+
+
 完成后，使用`exit`退出php的docker容器
 
-> 参考资料：[Fecshop 安装](http://www.fecshop.com/doc/fecshop-guide/develop/cn-1.0/guide-fecshop-about-hand-install.html)
-
+这样，我们部署完成了docker，并且下载了fecshop，并进行了初始化
 
 
 ### 配置fecshop
 
 
-> 参考：[Fecshop 初始配置](http://www.fecshop.com/doc/fecshop-guide/develop/cn-1.0/guide-fecshop-about-config.html)
+1.准备域名
 
-> 为了更方便的配置，Terry在 `./example_data/` 中已经进行了一些默认配置，
-> 您可以使用默认配置先搭建起来，然后在按照自己的需要进行更改。
-> 下面介绍的是在`./example_data/`里面的各个配置和其他的一些东西，
-> 您可以进入`./example_data/`文件件，
-> 将默认的配置覆盖到fecshop中。
+> Fecmall是一个多入口的电商系统，各个入口独立访问，对应独立的子域名如下：
 
 
+Pc端：`appfront.fecshoptest.com`
 
-1、本机（浏览器所在的电脑，也就是您的window本机），添加host(打开C:\Windows\System32\drivers\etc\hosts，添加如下代码,如果是其他IP，将 127.0.0.1 替换成其他IP即可。)
+后台：`appadmin.fecshoptest.com`
 
-```
-127.0.0.1       my.fecshop.com       # mysql的phpmyadmin的域名指向
-127.0.0.1       appadmin.fecshop.com # 后台域名指向
-127.0.0.1       appfront.fecshop.com # 前台pc端域名指向
-127.0.0.1       appfront.fecshop.es  # 前台pc端 es 语言的域名指向
-127.0.0.1       apphtml5.fecshop.com # 前台html端的域名指向
-127.0.0.1       appapi.fecshop.com   # api端的域名指向
-127.0.0.1       appserver.fecshop.com # server端的域名指向
-127.0.0.1       img.fecshop.com		#appimage/common   图片的域名指向
-127.0.0.1       img2.fecshop.com	#appimage/appadmin 图片的域名指向
-127.0.0.1       img3.fecshop.com	#appimage/appfront 图片的域名指向
-127.0.0.1       img4.fecshop.com	#appimage/apphtml5 图片的域名指向
-127.0.0.1       img5.fecshop.com	#appimage/appserver图片的域名指向
-```
+图片：`img.fecshoptest.com`
+
+H5端: `apphtml5.fecshoptest.com`(如果不安装h5，vue等入口，可以不准备)
+
+移动Api端：`appserver.fecshoptest.com`  (如果不安装微信小程序，vue等入口，可以不准备)
+ 
+第三方数据对接Api端：`appapi.fecshoptest.com` (如果不和第三方系统进行数据对接，可以不准备)
+
+将上面的域名（替换成您自己的域名）解析到您的服务器，
+如果您是在本地，可以在host文件中做虚拟域名指向127.0.0.1即可
 
 
+nginx的配置文件为`./services/web/nginx/conf/conf.d/default.conf`
 
-2.更改配置文件
+如果您使用自定义域名，将其配置域名替换即可
 
-数据库配置：
-
-打开 ./example_data/fecshop/common/config/main-local.php
-,将mysql的密码，redis的密码，以及redis在session cache中使用的密码，都配置一下，
-密码使用上面进设置的密码。
-
-3.配置域名 **默认对应1步骤的host对应的域名，使用默认即可，如果您要自定义域名，才需要修改**
-
-3.1配置图片部分的域名：`./app/fecshop/common/config/fecshop_local_services/Image.php`
-
-3.2nginx做路径指向设置，配置文件为`./services/web/nginx/conf/conf.d/default.conf`
-
-3.3Store的配置：
-
-`./example/fecshop/` 下三个入口的store配置
+然后重启docker
 
 ```
-@appfront/config/fecshop_local_services/Store.php 
-
-@apphtml5/config/fecshop_local_services/Store.php 
-
-@appserver/config/fecshop_local_services/Store.php 
+docker-compose stop
+docker-compose up -d
 ```
 
+Fecmall界面安装
+----------------
 
-4.例子数据修改完成后，复制到fecshop文件夹中
+1.在上面的步骤中，配置了nginx, 您配置好域名后，appfront对应域名配置为：`appfront.fecshoptest.com`   >  `$root/appfront/web/`
 
-进入`./example_data/`文件，执行：
+安装入口文件为：`$root/appfront/web/install.php`
+, 打开安装地址： http://appfront.fecshoptest.com/install.php （替换成您自己的域名）
+
+
+![](images/da1.png)
+
+mysql的数据库和用户名密码，就是`docker-compose.yml`里面配置的mysql参数，
+注意，host不要填写`127.0.0.1`,**而是填写`mysql`**
+
+2.填写mysql的配置，点击提交
+
+![](images/da2.png)
+
+提交后，如图：
+
+![](images/da11.png)
+
+mysql的配置写入了配置文件：`@common/config/main-local.php`
+
+
+点击按钮： `进行数据表初始化`，需要一段时间执行（请耐心等待），执行完成后的界面如下：
+
+
+![](images/da12.png)
+
+
+
+点击`测试产品数据安装`，完成后界面（如果不想安装测试数据，可以点击`跳过`按钮）
+
+![](images/da13.png)
+
+
+
+点击`下一步`按钮，进入完成安装界面
+
+![](images/da15.png)
+
+
+您可以进入mysql查看一下数据表是否已经创建，然后查看一下`product_flat`表里面是否有数据，进行数据库初始化以及
+测试数据安装成功确认。
+
+
+
+3.您还需要进行如下的步骤：
+
+3.1需要设置`安全权限`（根目录执行，win不需要执行）：`chmod 644 common/config/main-local.php`
+
+3.2删除安装文件 install.php（**为了安全，一定要删除掉**）(文件路径为：`./app/fecshop/appfront/web/install.php`),
+
+
+Fecmall访问后台，进行后台配置
+-----------------------
+
+也就是上面配置的域名：`appadmin.fecshoptest.com`
+
+初始账户密码：  `admin`  `admin123`
+
+右上角切换成`中文语言`。
+
+**首先配置图片域名** 
+
+`网站配置`-->`基础配置`-->`基础配置`  找到`图片域名`，填写您的图片域名，譬如：`//img.fecshoptest.com`
+(前面不要加`http:`,这种方式http和https都可以调用图片url,将该域名替换成您自己的域名)
+
+![](images/ff1.png)
+
+3.1后台添加`appfront`(PC)配置，添加`store`
+
+
+`网站配置`-->`Appfront配置`-->`Store配置`
+
+可以看到`store`列表，点击`id为1`的数据（激活状态），进行编辑，将域名更改成 `appfront.fecshoptest.com`(替换成您自己的域名)，保存
+
+然后就可以访问：appfront.fecshoptest.com ，查看pc端了
+
+![](images/ff2.png)
+
+
+3.2配置Apphtml5
+
+`网站配置`-->`Apphtml5配置`-->`Store配置`
+
+可以看到store列表，点击`id为8`的数据（激活状态），进行编辑，将域名更改成 `apphtml5.fecshoptest.com`(替换成您自己的域名)，保存
+
+然后就可以访问：apphtml5.fecshoptest.com ，查看H5端了
+
+![](images/ff3.png)
+
+
+3.3配置Appserver
+
+
+> 这里是对`Appserver`端的配置，对应的域名为：`appserver.fecshoptest.com`(替换成您自己的域名) ,是对微信小程序，vue等客户端提供api的入口
+
+`网站配置`-->`Appappserver配置`-->`Store配置`
+
+将 `Store Key` 更改成 `appserver.fecshoptest.com` (替换成您自己的域名)即可。
+
+![](images/ff5.png)
+
+Appserver 就可以为vue和微信小程序提供api了。
+
+其他的配置
+----------------
+
+> 配置完`appserver.fecshoptest.com`，您可以安装vue和微信小程序等客户端
+
+`vue`: https://github.com/fecshop/vue_fecshop_appserver
+
+`微信小程序`：https://github.com/fecshop/wx_micro_program
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 配置开机启动docker以及docker容器
+
+1.centos7下面开机启动docker
 
 ```
-// 复制配置文件到fecshop目录，也就是上面3步骤中的各个store 域名 以及数据库配置文件，复制到./app/fecshop目录中
-\cp -rf ./fecshop/* ../app/fecshop/
-// 解压产品图片到./app/fecshop目录中
-unzip -o ./example_img_and_db_data/appimage.zip  -d  ../app/fecshop/
+systemctl enable docker
 ```
 
+2.开机启动docker-compose
 
-5.创建mysql数据库
-
-5.1在根目录（./yii2_fecshop_docker）下执行，进入mysql的容器
-
-```
-docker-compose exec mysql bash
-```
-
-执行`mysql -uroot -p` 进入mysql
+`vim /etc/rc.d/rc.local` , 新行，添加下面的命令行
 
 ```
-use fecshop;
-create database fecshop;
-show databases;
-exit;
+/usr/local/bin/docker-compose -f /www/web/yii2_fecshop_docker/docker-compose.yml up -d
 ```
 
-`exit`，退出容器,回到宿主主机
-
-5.2 Yii2 migratge方式导入表结构。
-
-```
-docker-compose exec php bash
-cd /www/web/fecshop
-```
-mysql(导入mysql的表，数据，索引):
-
-```
-./yii migrate --interactive=0 --migrationPath=@fecshop/migrations/mysqldb
-```
-
-mongodb(导入mongodb的表，数据，索引):
-
-```
-./yii mongodb-migrate  --interactive=0 --migrationPath=@fecshop/migrations/mongodb
-```
-
-`exit`，退出容器,回到宿主主机
-
-6.测试数据
-
-6.1安装mongodb数据库的测试数据
-
-在根目录下（github下载完成后的文件夹下）进入mongodb容器
-
-```
-docker-compose exec mongodb bash
-```
-
-```
-mongo mongodb:27017/fecshop --quiet /data/example_db/mongo-fecshop_test-20170419-065157.js
-```
-
-`exit`，退出容器,回到宿主主机
-
-6.2安装mysql数据库的测试数据
-
-在根目录(docker-compose.yml文件所在目录)下执行，进入mysql的容器
-
-```
-docker-compose exec mysql bash
-```
-
-执行`mysql -uroot -p` 进入mysql
-
-```
-use fecshop;
-source /var/example_db/mysql_fecshop.sql
-exit
-```
-
-`exit`，退出容器,回到宿主主机
-
-9.初始化搜索引擎数据
-
-> 由于yii2-xunsearch的host配置方式，不是在组件中配置，而是在search.ini配置文件中配置（这个地方感觉很不舒服，也只能这样），因此需要更改
-> ,这个部分的代码后面新版本会更改，目前的fecshop 1.3.0.3没有更改，需要手动更改，步骤如下，对于1.3.0.3之后的fecshop版本已经改好，不需要操作下面的更改
-
-
-在宿主主机打开文件：`./app/fecshop/vendor/fancyecommerce/fecshop/config/xunsearch/search.ini`
-
-```
-;server.index = 8383
-;server.search = 8384
-```
-
-改成
-
-```
-server.index = xunsearch:8383
-server.search = xunsearch:8384
-```
-
-9.2然后在根目录(docker-compose.yml文件所在目录)下执行，进入php的容器
-
-```
-docker-compose exec php bash
-```
-
-> ubuntu 6.10 开始，ubuntu 就将先前默认的bash shell 更换成了dash shell；其表现为 /bin/sh 链接倒了/bin/dash而不是传统的/bin/bash。
-> 详细参看： http://blog.csdn.net/liuqinglong_along/article/details/52191382
-
-修改：
-
-```
-dpkg-reconfigure dash
-然后填写no，
-```
-
-9.3.然后执行
-
-```
-
-cd /www/web/fecshop/vendor/fancyecommerce/fecshop/shell/search
-sh fullSearchSync.sh    //ubuntu下面用bash  
-```
-
-如果没有报错，就完成了，执行`exit`退出php容器。
-
-
-10.后台的默认用户名密码
-
-可以访问各个入口了,如果您的域名配置是上面的默认配置那么：
-
-前端pc: `appfront.fecshop.com`
-
-前端html5：`appfront.fecshop.com`
-
-appapi： `appfront.fecshop.com`
-
-appserver: `appfront.fecshop.com`
-
-后台appadmin： `appfront.fecshop.com` , 后台的账户密码： `admin`  `admin123`
-
-
-console： `对于console的执行，需要进入php的容器，在 /www/web/fecshop中执行。`
-
-
+注意，要将`/www/web/yii2_fecshop_docker` 替换成您自己的地址。
 
 ### 安装VUE部分
 
@@ -483,112 +457,12 @@ npm run build
 就可以访问：http://vue.fecshop.com
 了，因为nginx默认已经配置了这个域名，可以直接访问。
 
-OK,fecshop docker compose的安装过程完成了。  
-
-是不是，so easy？，，，，妈妈再也不用担心我繁琐的安装fecshop了。
+OK,fecshop docker compose的安装过程完成了。
 
 
-### GUI访问数据库
 
-1.mongodb的访问
+### 使用phpmyadmin访问 mysql
 
-推荐使用RoboMongo，下载地址为：https://robomongo.org/download
-，支持使用ssh方式访问mongodb
-
-默认的方式是无法连接的，我们需要搭建一个ssh的容器，通过这个容器连接mongodb
-
-1.1 本部分参考的教程为：[Dockerize an SSH service](https://docs.docker.com/engine/examples/running_ssh_service/#build-an-eg_sshd-image)
-
-1.2 打开文件：./services/ssh/docker/Dockerfile , 找到配置行：`RUN echo 'root:setyoupasss22XXXcreencast' | chpasswd`
-,将`setyoupasss22XXXcreencast` 改成您自己的root密码，切记，这里一定要修改，！！！这里一定要修改，！！！
-这里一定要修改，！！！
-
-1.3 打开根目录的 `docker-compose.yml`, 在配置的services中加入：
-
-```
-ssh1:  
-    build: 
-      context: ./services/ssh/docker/
-    networks:
-      - code-network 
-    ports:
-      - "2222:22"
-```
-
-加入后的配置示例如下（下面只是给一个例子参考，切勿复制下面的文件覆盖你的docker-compose.yml）：
-
-```
-version: "2"  
-services:  
-  web:  
-    image: nginx  
-    ports:  
-      - "80:80" 
-    restart: always
-    volumes:  
-      - ./app:/www/web
-      - ./services/web/nginx/conf:/etc/nginx
-      - ./services/web/nginx/logs:/www/web_logs
-    networks:
-        - code-network
-    depends_on:
-      - php
-  ...  // 省略
-  redis:
-    image: redis
-    restart: always
-    ports:
-      - "6379:6379"
-    environment:
-        REDIS_PASS_FILE: /run/secrets/redis-password
-    command: [
-      "bash", "-c",
-      '
-       docker-entrypoint.sh
-       --requirepass "$$(cat $$REDIS_PASS_FILE)"
-      '
-    ]
-    volumes:
-      - ./db/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf 
-      - ./db/redis/data:/data 
-      - ./db/redis/etc/redis-password:/run/secrets/redis-password 
-    networks:
-      - code-network 
-  ssh1:  
-    build: 
-      context: ./services/ssh/docker/
-    networks:
-      - code-network 
-    ports:
-      - "2222:22"
-networks:
-  code-network:
-    driver: bridge
-```
-
-1.3下载robomongo，打开mongodb connects窗口。然后点击create，在弹出的窗口中有connection，ssh 和其他的tab块
-
-![](333.png)
-
-1.3.1 connection中填写： type：`redirect connection`，name：`fecshop`，Addredd：`mongodb` : `27017`
-
-1.3.2 点击SSH，勾选Use SSH tunnel，然后进行如下填写：
-
-
-ssh address ： `您的主机IP`：`2222`
-
-ssh User Name : `root`
-
-ssh Auth Method: 选择`password`方式
-
-User Password：填写上面1.2部分，在文件./services/ssh/docker/Dockerfile
-中填写的`密码`
-
-点击save ，然后进行连接即可
-
-2.mysql的访问
-
-使用phpmyadmin
 
 ```
 cd ./app
@@ -613,17 +487,7 @@ OK，是不是so easy？ 不光妈妈，就连爸爸也不担心我繁琐的配�
 
 
 
----------------------------------------------------------------------------
 
-QA:
+[其他部分资料](README-OTHER.md)
 
-1.安装的时候，在构建php的时候报错，怎么办？
 
-答：您可以将文件 	docker-compose.yml.php.aliyun 的内容复制到  	docker-compose.yml 中，然后执行下面的命名构建
-
-```
-docker-compose build --no-cache
-```
-docker-compose.yml.php.aliyun中添加了做好了的php镜像，地址放到了阿里云docker镜像中心，国内建议使用该文件
-
-docker-compose.yml.php.hub： php镜像放到了hub.docker.com ，国外服务器使用该地址

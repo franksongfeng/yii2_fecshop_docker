@@ -17,12 +17,11 @@ RUN apt-get update && apt-get install -y \
         libpcre3-dev \
         --no-install-recommends       
        
-RUN docker-php-ext-install mcrypt zip intl mbstring mysqli pdo_mysql exif xmlrpc \
+RUN docker-php-ext-install mcrypt zip bcmath intl mbstring mysqli pdo_mysql exif xmlrpc \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd
 
-
-RUN pecl install -o -f oauth mongodb amqp \
+RUN pecl install -o -f oauth mongodb amqp-1.8.0 \
     && rm -rf /tmp/pear
 
 RUN docker-php-ext-enable mongodb oauth amqp
@@ -36,9 +35,8 @@ RUN curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
     && chmod +x /usr/local/bin/composer
 
-RUN composer config -g repo.packagist composer https://packagist.phpcomposer.com
+RUN composer global require "fxp/composer-asset-plugin:^1.4.4"
 
-RUN composer global require "fxp/composer-asset-plugin:^1.4.0"
 
 RUN usermod -u 1000 www-data
 
